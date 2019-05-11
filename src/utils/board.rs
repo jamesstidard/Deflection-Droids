@@ -27,8 +27,6 @@ pub fn initialise(world: &mut World, sprite_sheet_handle: SpriteSheetHandle) {
             let y = (y_tile as f32) * TILE_HEIGHT + TILE_HEIGHT * 0.5;
             local_transform.set_xyz(x, y, 0.0);
 
-            println!("{} {}", y_tile, (y_tile as f32));
-
             world
                 .create_entity()
                 .with(Tile {
