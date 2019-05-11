@@ -66,6 +66,7 @@ impl SimpleState for Gameplay {
         let spritesheet = load_spritesheet(world);
         initialise_camera(world);
         world.register::<components::Tile>();
+        world.register::<components::Wall>();
         utils::board::initialise(world, spritesheet);
     }
 
