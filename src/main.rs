@@ -1,7 +1,7 @@
 extern crate amethyst;
 use amethyst::{
     prelude::*,
-    renderer::{DisplayConfig, DrawFlat2D, Pipeline, PosNormTex, RenderBundle, Stage, ColorMask, ALPHA},
+    renderer::{DisplayConfig, DrawFlat2D, Pipeline, RenderBundle, Stage, ColorMask, ALPHA},
     utils::application_root_dir,
     core::transform::TransformBundle,
     input::InputBundle,

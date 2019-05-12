@@ -1,7 +1,7 @@
 use amethyst::{
     ecs::prelude::*,
     core::transform::{Transform, Parent},
-    renderer::{SpriteSheetHandle, SpriteRender, Flipped},
+    renderer::{SpriteSheetHandle, SpriteRender},
 };
 
 use crate::components::Tile;

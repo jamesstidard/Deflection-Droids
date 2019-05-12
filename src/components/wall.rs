@@ -1,5 +1,5 @@
 use amethyst::{
-    ecs::prelude::{Component, DenseVecStorage, Entity},
+    ecs::prelude::{Component, DenseVecStorage},
 };
 
 
