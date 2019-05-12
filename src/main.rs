@@ -4,6 +4,7 @@ use amethyst::{
     renderer::{DisplayConfig, DrawFlat2D, Pipeline, PosNormTex, RenderBundle, Stage, ColorMask, ALPHA},
     utils::application_root_dir,
     core::transform::TransformBundle,
+    input::InputBundle,
 };
 
 mod components;
@@ -29,8 +30,17 @@ fn main() -> amethyst::Result<()> {
     let render_bundle = RenderBundle::new(pipe, Some(config))
         .with_sprite_sheet_processor();
 
+    // input bundle
+    let binding_path = format!(
+        "{}/resources/bindings_config.ron",
+        application_root_dir()
+    );
+    let input_bundle = InputBundle::<String, String>::new()
+        .with_bindings_from_file(binding_path)?;
+
     let game_data = GameDataBuilder::default()
         .with_bundle(render_bundle)?
+        .with_bundle(input_bundle)?
         .with_bundle(TransformBundle::new())?;
 
     let mut game = Application::new("./", Gameplay, game_data)?;
