@@ -67,6 +67,7 @@ impl SimpleState for Gameplay {
         initialise_camera(world);
         world.register::<components::Tile>();
         world.register::<components::Wall>();
+        world.register::<components::Droid>();
         utils::board::initialise(world, spritesheet);
     }
 

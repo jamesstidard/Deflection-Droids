@@ -7,6 +7,7 @@ use amethyst::{
 use crate::components::Tile;
 use crate::components::tile::{TILE_HEIGHT, TILE_WIDTH};
 use crate::components::Wall;
+use crate::components::Droid;
 
 pub const X_TILES_COUNT: i32 = 16;
 pub const Y_TILES_COUNT: i32 = 16;
@@ -65,7 +66,9 @@ const WALLS: [[f32; 2]; 50] = [
     [2.0, 15.5],
     [12.0, 15.5],
 ];
-
+const DROIDS: [[i32; 2]; 1] = [
+    [0, 0],
+];
 
 pub fn initialise(world: &mut World, sprite_sheet_handle: SpriteSheetHandle) {
     let tile_render = SpriteRender {
@@ -73,8 +76,12 @@ pub fn initialise(world: &mut World, sprite_sheet_handle: SpriteSheetHandle) {
         sprite_number: 0,
     };
     let wall_render = SpriteRender {
-        sprite_sheet: sprite_sheet_handle,
+        sprite_sheet: sprite_sheet_handle.clone(),
         sprite_number: 3,
+    };
+    let droid_render = SpriteRender {
+        sprite_sheet: sprite_sheet_handle,
+        sprite_number: 1,
     };
 
     for x_tile in 0..X_TILES_COUNT {
@@ -161,6 +168,17 @@ pub fn initialise(world: &mut World, sprite_sheet_handle: SpriteSheetHandle) {
                     .with(wall_transform)
                     .with(Parent{entity: tile})
                     .with(wall_render.clone())
+                    .build();
+            }
+
+            // Droid
+            if DROIDS.iter().find(|&&w| w == [x_tile, y_tile]).is_some() {
+                world
+                    .create_entity()
+                    .with(Droid{})
+                    .with(Transform::default())
+                    .with(Parent{entity: tile})
+                    .with(droid_render.clone())
                     .build();
             }
         }
