@@ -15,7 +15,7 @@ use crate::components;
 
 fn initialise_camera(world: &mut World) {
     let mut transform = Transform::default();
-    transform.set_z(1.0);
+    transform.set_z(20.0);
     world
         .create_entity()
         .with(Camera::from(Projection::orthographic(

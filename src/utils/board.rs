@@ -174,10 +174,12 @@ pub fn initialise(world: &mut World, sprite_sheet_handle: SpriteSheetHandle) {
 
             // Droid
             if DROIDS.iter().find(|&&w| w == [x_tile, y_tile]).is_some() {
+                let mut droid_transform = Transform::default();
+                droid_transform.set_z(0.0);
                 world
                     .create_entity()
                     .with(Droid{})
-                    .with(Transform::default())
+                    .with(droid_transform)
                     .with(Parent{entity: tile})
                     .with(droid_render.clone())
                     .build();
