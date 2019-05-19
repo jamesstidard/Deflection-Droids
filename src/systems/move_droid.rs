@@ -145,7 +145,6 @@ impl<'s> System<'s> for MoveDroidSystem {
         }
 
         for (entity, tile) in moves {
-            println!("to {:?} {:?}", entity, tile);
             parents.insert(entity, Parent{entity: tile});
         }
     }
