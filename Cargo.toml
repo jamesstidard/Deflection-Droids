@@ -5,4 +5,5 @@ authors = []
 edition = "2018"
 
 [dependencies]
+rand = "*"
 amethyst = { version = "0.10.0", features = ["nightly"] }

@@ -7,6 +7,7 @@ use amethyst::{
 use crate::components::Tile;
 use crate::components::tile::{TILE_HEIGHT, TILE_WIDTH};
 use crate::components::Wall;
+use crate::components::wall::Side;
 use crate::components::Droid;
 
 pub const X_TILES_COUNT: i32 = 16;
@@ -95,7 +96,7 @@ pub fn initialise(world: &mut World, sprite_sheet_handle: SpriteSheetHandle) {
             let tile = world
                 .create_entity()
                 .with(Tile{})
-                .with(tile_render.clone())
+                // .with(tile_render.clone())
                 .with(local_transform.clone())
                 .build();
 
@@ -110,7 +111,7 @@ pub fn initialise(world: &mut World, sprite_sheet_handle: SpriteSheetHandle) {
                 wall_transform.roll_local(0f32.to_radians());
                 world
                     .create_entity()
-                    .with(Wall{})
+                    .with(Wall{side: Side::Left})
                     .with(wall_transform)
                     .with(Parent{entity: tile})
                     .with(wall_render.clone())
@@ -128,7 +129,7 @@ pub fn initialise(world: &mut World, sprite_sheet_handle: SpriteSheetHandle) {
                 wall_transform.roll_local(90f32.to_radians());
                 world
                     .create_entity()
-                    .with(Wall{})
+                    .with(Wall{side: Side::Top})
                     .with(wall_transform)
                     .with(Parent{entity: tile})
                     .with(wall_render.clone())
@@ -146,7 +147,7 @@ pub fn initialise(world: &mut World, sprite_sheet_handle: SpriteSheetHandle) {
                 wall_transform.roll_local(180f32.to_radians());
                 world
                     .create_entity()
-                    .with(Wall{})
+                    .with(Wall{side: Side::Right})
                     .with(wall_transform)
                     .with(Parent{entity: tile})
                     .with(wall_render.clone())
@@ -164,7 +165,7 @@ pub fn initialise(world: &mut World, sprite_sheet_handle: SpriteSheetHandle) {
                 wall_transform.roll_local(270f32.to_radians());
                 world
                     .create_entity()
-                    .with(Wall{})
+                    .with(Wall{side: Side::Bottom})
                     .with(wall_transform)
                     .with(Parent{entity: tile})
                     .with(wall_render.clone())

@@ -1,6 +1,7 @@
 extern crate amethyst;
 use amethyst::{
     prelude::*,
+    LoggerConfig, StdoutLog, LogLevelFilter,
     renderer::{DisplayConfig, DrawFlat2D, Pipeline, RenderBundle, Stage, ColorMask, ALPHA},
     utils::application_root_dir,
     core::transform::TransformBundle,
@@ -8,13 +9,19 @@ use amethyst::{
 };
 
 mod components;
+mod systems;
 mod gameplay;
 mod utils;
 use crate::gameplay::Gameplay;
 
 
 fn main() -> amethyst::Result<()> {
-    amethyst::start_logger(Default::default());
+    amethyst::start_logger(LoggerConfig {
+        stdout: StdoutLog::Colored,
+        level_filter: LogLevelFilter::Warn,
+        log_file: None,
+        allow_env_override: true
+    });
 
     let path = format!(
         "{}/resources/display_config.ron",
@@ -41,7 +48,8 @@ fn main() -> amethyst::Result<()> {
     let game_data = GameDataBuilder::default()
         .with_bundle(render_bundle)?
         .with_bundle(input_bundle)?
-        .with_bundle(TransformBundle::new())?;
+        .with_bundle(TransformBundle::new())?
+        .with(systems::MoveDroidSystem, "move_droid", &[]);
 
     let mut game = Application::new("./", Gameplay, game_data)?;
 

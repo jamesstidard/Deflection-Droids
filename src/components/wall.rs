@@ -3,7 +3,18 @@ use amethyst::{
 };
 
 
+#[derive(PartialEq, Eq, Debug)]
+pub enum Side {
+    Left,
+    Right,
+    Top,
+    Bottom,
+}
+
+
+#[derive(Debug)]
 pub struct Wall {
+    pub side: Side,
 }
 
 

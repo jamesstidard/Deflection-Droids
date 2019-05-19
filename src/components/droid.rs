@@ -3,6 +3,13 @@ use amethyst::{
 };
 
 
+pub enum Direction {
+    Horizontal,
+    Vertical,
+}
+
+
+#[derive(Debug)]
 pub struct Droid {
 }
 
