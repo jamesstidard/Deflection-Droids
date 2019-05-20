@@ -35,7 +35,8 @@ fn main() -> amethyst::Result<()> {
             .with_pass(DrawFlat2D::new().with_transparency(ColorMask::all(), ALPHA, None)),
     );
     let render_bundle = RenderBundle::new(pipe, Some(config))
-        .with_sprite_sheet_processor();
+        .with_sprite_sheet_processor()
+        .with_sprite_visibility_sorting(&[]);
 
     // input bundle
     let binding_path = format!(
@@ -49,7 +50,8 @@ fn main() -> amethyst::Result<()> {
         .with_bundle(render_bundle)?
         .with_bundle(input_bundle)?
         .with_bundle(TransformBundle::new())?
-        .with(systems::MoveDroidSystem, "move_droid", &[]);
+        .with(systems::MoveDroidSystem, "move_droid", &[])
+        .with(systems::SelectDroidSystem, "select_droid", &[]);
 
     let mut game = Application::new("./", Gameplay, game_data)?;
 

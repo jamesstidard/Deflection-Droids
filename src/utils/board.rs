@@ -1,7 +1,7 @@
 use amethyst::{
     ecs::prelude::*,
     core::transform::{Transform, Parent},
-    renderer::{SpriteSheetHandle, SpriteRender},
+    renderer::{SpriteSheetHandle, SpriteRender, Transparent},
 };
 
 use crate::components::Tile;
@@ -96,7 +96,7 @@ pub fn initialise(world: &mut World, sprite_sheet_handle: SpriteSheetHandle) {
             let tile = world
                 .create_entity()
                 .with(Tile{})
-                // .with(tile_render.clone())
+                .with(tile_render.clone())
                 .with(local_transform.clone())
                 .build();
 
@@ -115,6 +115,7 @@ pub fn initialise(world: &mut World, sprite_sheet_handle: SpriteSheetHandle) {
                     .with(wall_transform)
                     .with(Parent{entity: tile})
                     .with(wall_render.clone())
+                    .with(Transparent)
                     .build();
             }
 
@@ -133,6 +134,7 @@ pub fn initialise(world: &mut World, sprite_sheet_handle: SpriteSheetHandle) {
                     .with(wall_transform)
                     .with(Parent{entity: tile})
                     .with(wall_render.clone())
+                    .with(Transparent)
                     .build();
             }
 
@@ -151,6 +153,7 @@ pub fn initialise(world: &mut World, sprite_sheet_handle: SpriteSheetHandle) {
                     .with(wall_transform)
                     .with(Parent{entity: tile})
                     .with(wall_render.clone())
+                    .with(Transparent)
                     .build();
             }
 
@@ -169,19 +172,21 @@ pub fn initialise(world: &mut World, sprite_sheet_handle: SpriteSheetHandle) {
                     .with(wall_transform)
                     .with(Parent{entity: tile})
                     .with(wall_render.clone())
+                    .with(Transparent)
                     .build();
             }
 
             // Droid
             if DROIDS.iter().find(|&&w| w == [x_tile, y_tile]).is_some() {
                 let mut droid_transform = Transform::default();
-                droid_transform.set_z(0.0);
+                droid_transform.set_z(1.0);
                 world
                     .create_entity()
                     .with(Droid{})
                     .with(droid_transform)
                     .with(Parent{entity: tile})
                     .with(droid_render.clone())
+                    .with(Transparent)
                     .build();
             }
         }
