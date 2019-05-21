@@ -19,11 +19,12 @@ impl<'s> System<'s> for SelectDroidSystem {
     );
 
     fn run(&mut self, (entities, selections, droids, transforms, input): Self::SystemData) {
-        for (entity, droid, transforms) in (&entities, &droids, &transforms).join() {
+        for (entity, droid, transform) in (&entities, &droids, &transforms).join() {
             let pos = input.mouse_position();
             println!("{:?}", pos);
-            // let click = input.button_is_down(MouseButton::Left);
-            // println!("{:?} {:?}", pos, click);
+            println!("{:?}", transform.translation());
+            let down = input.mouse_button_is_down(MouseButton::Left);
+            println!("{:?} {:?}", pos, down);
         }
     }
 }
