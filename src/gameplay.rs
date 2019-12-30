@@ -3,57 +3,68 @@ use amethyst::{
     prelude::*,
     assets::{AssetStorage, Loader},
     renderer::{
-        SpriteSheet, SpriteSheetFormat, SpriteSheetHandle,
-        Texture, TextureMetadata, PngFormat, Camera, Projection,
+        SpriteSheet, SpriteSheetFormat, SpriteRender,
+        Texture, ImageFormat, Camera,
     },
     core::transform::Transform,
+    window::ScreenDimensions,
 };
 
 use crate::utils;
 use crate::components;
 
 
-fn initialise_camera(world: &mut World) {
+fn initialise_camera(world: &mut World, dimensions: &ScreenDimensions) {
+    // Center the camera in the middle of the screen, and let it cover
+    // the entire screen
     let mut transform = Transform::default();
-    transform.set_z(20.0);
+    transform.set_translation_xyz(dimensions.width() * 0.5, dimensions.height() * 0.5, 1.);
+
     world
         .create_entity()
-        .with(Camera::from(Projection::orthographic(
-            0.0,
-            utils::board::BOARD_WIDTH,
-            0.0,
-            utils::board::BOARD_HEIGHT,
-        )))
+        .with(Camera::standard_2d(dimensions.width(), dimensions.height()))
         .with(transform)
         .build();
 }
 
 
-fn load_spritesheet(world: &mut World) -> SpriteSheetHandle {
-    // Load the sprite sheet necessary to render the graphics.
-    // The texture is the pixel data
-    // `texture_handle` is a cloneable reference to the texture
+fn load_sprites(world: &mut World) -> Vec<SpriteRender> {
+    // Load the texture for our sprites. We'll later need to
+    // add a handle to this texture to our `SpriteRender`s, so
+    // we need to keep a reference to it.
     let texture_handle = {
         let loader = world.read_resource::<Loader>();
         let texture_storage = world.read_resource::<AssetStorage<Texture>>();
         loader.load(
-            "texture/spritesheet.png",
-            PngFormat,
-            TextureMetadata::srgb_scale(),
+            "sprites/spritesheet.png",
+            ImageFormat::default(),
             (),
             &texture_storage,
         )
     };
 
-    let loader = world.read_resource::<Loader>();
-    let sprite_sheet_store = world.read_resource::<AssetStorage<SpriteSheet>>();
-    loader.load(
-        "texture/spritesheet.ron", // Here we load the associated ron file
-        SpriteSheetFormat,
-        texture_handle, // We pass it the handle of the texture we want it to use
-        (),
-        &sprite_sheet_store,
-    )
+    // Load the spritesheet definition file, which contains metadata on our
+    // spritesheet texture.
+    let sheet_handle = {
+        let loader = world.read_resource::<Loader>();
+        let sheet_storage = world.read_resource::<AssetStorage<SpriteSheet>>();
+        loader.load(
+            "sprites/spritesheet.ron", // Here we load the associated ron file
+            SpriteSheetFormat(texture_handle),
+            (),
+            &sheet_storage,
+        )
+    };
+
+    // Create our sprite renders. Each will have a handle to the texture
+    // that it renders from. The handle is safe to clone, since it just
+    // references the asset.
+    (0..5)
+        .map(|i| SpriteRender {
+            sprite_sheet: sheet_handle.clone(),
+            sprite_number: i,
+        })
+        .collect()
 }
 
 
@@ -63,12 +74,17 @@ impl SimpleState for Gameplay {
 
     fn on_start(&mut self, data: StateData<'_, GameData<'_, '_>>) {
         let world = data.world;
-        let spritesheet = load_spritesheet(world);
-        initialise_camera(world);
+        // Get the screen dimensions so we can initialize the camera and
+        // place our sprites correctly later. We'll clone this since we'll
+        // pass the world mutably to the following functions.
+        let dimensions = (*world.read_resource::<ScreenDimensions>()).clone();
+        let sprites = load_sprites(world);
+
+        initialise_camera(world, &dimensions);
         world.register::<components::Tile>();
         world.register::<components::Wall>();
         world.register::<components::Droid>();
-        utils::board::initialise(world, spritesheet);
+        utils::board::initialise(world, &sprites, &dimensions);
     }
 
 }

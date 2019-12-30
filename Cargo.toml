@@ -6,4 +6,11 @@ edition = "2018"
 
 [dependencies]
 rand = "*"
-amethyst = { version = "0.10.0", features = ["nightly"] }
+amethyst = { version = "~0.13" }
+
+[features]
+default = ["metal"]
+empty = ["amethyst/empty"]
+metal = ["amethyst/metal"]
+vulkan = ["amethyst/vulkan"]
+nightly = ["amethyst/nightly"]

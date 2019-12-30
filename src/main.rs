@@ -1,11 +1,14 @@
 extern crate amethyst;
 use amethyst::{
-    prelude::*,
-    LoggerConfig, StdoutLog, LogLevelFilter,
-    renderer::{DisplayConfig, DrawFlat2D, Pipeline, RenderBundle, Stage, ColorMask, ALPHA},
-    utils::application_root_dir,
     core::transform::TransformBundle,
-    input::InputBundle,
+    prelude::*,
+    renderer::{
+        plugins::{RenderFlat2D, RenderToWindow},
+        types::DefaultBackend,
+        RenderingBundle,
+    },
+    utils::application_root_dir,
+    input::{InputBundle, StringBindings},
 };
 
 mod components;
@@ -16,45 +19,34 @@ use crate::gameplay::Gameplay;
 
 
 fn main() -> amethyst::Result<()> {
-    amethyst::start_logger(LoggerConfig {
-        stdout: StdoutLog::Colored,
-        level_filter: LogLevelFilter::Warn,
-        log_file: None,
-        allow_env_override: true
-    });
+    amethyst::start_logger(Default::default());
 
-    let path = format!(
-        "{}/resources/display_config.ron",
-        application_root_dir()
-    );
-    let config = DisplayConfig::load(&path);
-
-    let pipe = Pipeline::build().with_stage(
-        Stage::with_backbuffer()
-            .clear_target([0.00196, 0.23726, 0.21765, 1.0], 1.0)
-            .with_pass(DrawFlat2D::new().with_transparency(ColorMask::all(), ALPHA, None)),
-    );
-    let render_bundle = RenderBundle::new(pipe, Some(config))
-        .with_sprite_sheet_processor()
-        .with_sprite_visibility_sorting(&[]);
-
-    // input bundle
-    let binding_path = format!(
-        "{}/resources/bindings_config.ron",
-        application_root_dir()
-    );
-    let input_bundle = InputBundle::<String, String>::new()
-        .with_bindings_from_file(binding_path)?;
+    let app_root = application_root_dir()?;
+    let resources = app_root.join("resources");
+    let display_config = resources.join("display_config.ron");
+    let binding_path = resources.join("bindings_config.ron");
 
     let game_data = GameDataBuilder::default()
-        .with_bundle(render_bundle)?
-        .with_bundle(input_bundle)?
         .with_bundle(TransformBundle::new())?
+        .with_bundle(
+            RenderingBundle::<DefaultBackend>::new()
+                .with_plugin(
+                    RenderToWindow::from_config_path(display_config)
+                        .with_clear([0.34, 0.36, 0.52, 1.0]),
+                )
+                .with_plugin(RenderFlat2D::default()),
+                // .with_sprite_sheet_processor()
+                // .with_sprite_visibility_sorting(&[]),
+        )?
+        .with_bundle(
+            InputBundle::<StringBindings>::new()
+                .with_bindings_from_file(binding_path)?
+        )?
         .with(systems::MoveDroidSystem, "move_droid", &[])
-        .with(systems::SelectDroidSystem, "select_droid", &[]);
+        // .with(systems::SelectDroidSystem, "select_droid", &[])
+    ;
 
-    let mut game = Application::new("./", Gameplay, game_data)?;
-
+    let mut game = Application::new(resources, Gameplay, game_data)?;
     game.run();
 
     Ok(())

@@ -1,6 +1,6 @@
 use amethyst::core::Transform;
 use amethyst::ecs::{Join, Read, ReadStorage, System, WriteStorage, Entities};
-use amethyst::input::InputHandler;
+use amethyst::input::{InputHandler, StringBindings};
 use amethyst::core::components::Parent;
 
 use crate::components::Wall;
@@ -25,7 +25,7 @@ impl<'s> System<'s> for MoveDroidSystem {
         WriteStorage<'s, Parent>,
         ReadStorage<'s, Wall>,
         ReadStorage<'s, Transform>,
-        Read<'s, InputHandler<String, String>>,
+        Read<'s, InputHandler<StringBindings>>,
     );
 
     fn run(&mut self, (entities, droids, mut parents, walls, transforms, input): Self::SystemData) {

@@ -1,7 +1,8 @@
 use amethyst::{
     ecs::prelude::*,
     core::transform::{Transform, Parent},
-    renderer::{SpriteSheetHandle, SpriteRender, Transparent},
+    renderer::{SpriteRender, Transparent},
+    window::ScreenDimensions,
 };
 
 use crate::components::Tile;
@@ -71,19 +72,10 @@ const DROIDS: [[i32; 2]; 1] = [
     [0, 0],
 ];
 
-pub fn initialise(world: &mut World, sprite_sheet_handle: SpriteSheetHandle) {
-    let tile_render = SpriteRender {
-        sprite_sheet: sprite_sheet_handle.clone(),
-        sprite_number: 0,
-    };
-    let wall_render = SpriteRender {
-        sprite_sheet: sprite_sheet_handle.clone(),
-        sprite_number: 3,
-    };
-    let droid_render = SpriteRender {
-        sprite_sheet: sprite_sheet_handle,
-        sprite_number: 1,
-    };
+pub fn initialise(world: &mut World, sprites: &[SpriteRender], dimensions: &ScreenDimensions) {
+    let tile_render = &sprites[0];
+    let wall_render = &sprites[3];
+    let droid_render = &sprites[1];
 
     for x_tile in 0..X_TILES_COUNT {
         for y_tile in 0..Y_TILES_COUNT {
@@ -91,7 +83,7 @@ pub fn initialise(world: &mut World, sprite_sheet_handle: SpriteSheetHandle) {
             let mut local_transform = Transform::default();
             let x = (x_tile as f32) * TILE_WIDTH + TILE_WIDTH * 0.5;
             let y = (y_tile as f32) * TILE_HEIGHT + TILE_HEIGHT * 0.5;
-            local_transform.set_xyz(x, y, 0.0);
+            local_transform.set_translation_xyz(x, y, 0.0);
 
             let tile = world
                 .create_entity()
@@ -108,7 +100,7 @@ pub fn initialise(world: &mut World, sprite_sheet_handle: SpriteSheetHandle) {
                 .is_some();
             if left_edge || left_wall {
                 let mut wall_transform = Transform::default();
-                wall_transform.roll_local(0f32.to_radians());
+                wall_transform.set_rotation_2d(0f32.to_radians());
                 world
                     .create_entity()
                     .with(Wall{side: Side::Left})
@@ -127,7 +119,7 @@ pub fn initialise(world: &mut World, sprite_sheet_handle: SpriteSheetHandle) {
                 .is_some();
             if top_edge || top_wall {
                 let mut wall_transform = Transform::default();
-                wall_transform.roll_local(90f32.to_radians());
+                wall_transform.set_rotation_2d(90f32.to_radians());
                 world
                     .create_entity()
                     .with(Wall{side: Side::Top})
@@ -146,7 +138,7 @@ pub fn initialise(world: &mut World, sprite_sheet_handle: SpriteSheetHandle) {
                 .is_some();
             if right_edge || right_wall {
                 let mut wall_transform = Transform::default();
-                wall_transform.roll_local(180f32.to_radians());
+                wall_transform.set_rotation_2d(180f32.to_radians());
                 world
                     .create_entity()
                     .with(Wall{side: Side::Right})
@@ -165,7 +157,7 @@ pub fn initialise(world: &mut World, sprite_sheet_handle: SpriteSheetHandle) {
                 .is_some();
             if bottom_edge || bottom_wall {
                 let mut wall_transform = Transform::default();
-                wall_transform.roll_local(270f32.to_radians());
+                wall_transform.set_rotation_2d(270f32.to_radians());
                 world
                     .create_entity()
                     .with(Wall{side: Side::Bottom})
@@ -179,7 +171,7 @@ pub fn initialise(world: &mut World, sprite_sheet_handle: SpriteSheetHandle) {
             // Droid
             if DROIDS.iter().find(|&&w| w == [x_tile, y_tile]).is_some() {
                 let mut droid_transform = Transform::default();
-                droid_transform.set_z(1.0);
+                droid_transform.set_translation_z(1.0);
                 world
                     .create_entity()
                     .with(Droid{})
