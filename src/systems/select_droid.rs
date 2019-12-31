@@ -67,15 +67,16 @@ impl<'s> System<'s> for SelectDroidSystem {
                 for (entity, _, sprite, transform) in (&entities, &droids, &sprites, &transforms).join() {
                     let sprite_sheet = sprite_sheets.get(&sprite.sprite_sheet).unwrap();
                     let sprite = &sprite_sheet.sprites[sprite.sprite_number];
+                    // TODO: need transform.translation in world coord system
                     let (min_x, max_x, min_y, max_y) = {
                         // Sprites are centered on a coordinate, so we build out a bbox for the sprite coordinate
                         // and dimensions
                         // Notice we ignore z-axis for this example.
                         (
-                            transform.translation().x - sprite.width,
-                            transform.translation().x + sprite.width,
-                            transform.translation().y - sprite.height,
-                            transform.translation().y + sprite.height,
+                            transform.translation().x - (sprite.width * 0.5),
+                            transform.translation().x + (sprite.width * 0.5),
+                            transform.translation().y - (sprite.height * 0.5),
+                            transform.translation().y + (sprite.height * 0.5),
                         )
                     };
                     if mouse_world_position.x > min_x
