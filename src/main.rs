@@ -43,7 +43,7 @@ fn main() -> amethyst::Result<()> {
                 .with_bindings_from_file(binding_path)?
         )?
         .with(systems::MoveDroidSystem, "move_droid", &[])
-        // .with(systems::SelectDroidSystem, "select_droid", &[])
+        .with(systems::SelectDroidSystem, "select_droid", &[])
     ;
 
     let mut game = Application::new(resources, Gameplay, game_data)?;
