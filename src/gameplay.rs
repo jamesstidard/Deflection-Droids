@@ -99,6 +99,7 @@ impl SimpleState for Gameplay {
         world.register::<components::Tile>();
         world.register::<components::Wall>();
         world.register::<components::Droid>();
+        world.register::<components::Selected>();
         utils::board::initialise(world, &sprites);
     }
 
