@@ -7,7 +7,6 @@ use amethyst::{
         resources::Tint,
         palette::Srgba,
     },
-    window::ScreenDimensions,
 };
 
 use crate::components::Tile;
@@ -15,12 +14,11 @@ use crate::components::tile::{TILE_HEIGHT, TILE_WIDTH};
 use crate::components::Wall;
 use crate::components::wall::Side;
 use crate::components::Droid;
-use crate::components::Selected;
 
 pub const X_TILES_COUNT: i32 = 16;
 pub const Y_TILES_COUNT: i32 = 16;
-pub const BOARD_WIDTH: f32 = TILE_WIDTH * (X_TILES_COUNT as f32);
-pub const BOARD_HEIGHT: f32 = TILE_HEIGHT * (Y_TILES_COUNT as f32);
+// pub const BOARD_WIDTH: f32 = TILE_WIDTH * (X_TILES_COUNT as f32);
+// pub const BOARD_HEIGHT: f32 = TILE_HEIGHT * (Y_TILES_COUNT as f32);
 
 const WALLS: [[f32; 2]; 50] = [
     [6.0, 0.5],
@@ -82,7 +80,6 @@ pub fn initialise(world: &mut World, sprites: &[SpriteRender]) {
     let tile_sprite = &sprites[0];
     let droid_sprite = &sprites[1];
     let wall_sprite = &sprites[3];
-    let selection_sprite = &sprites[4];
 
     for x_tile in 0..X_TILES_COUNT {
         for y_tile in 0..Y_TILES_COUNT {

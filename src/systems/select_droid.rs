@@ -85,10 +85,11 @@ impl<'s> System<'s> for SelectDroidSystem {
                 let distance = ray.intersect_plane(&Plane::with_z(0.0)).unwrap();
                 let mouse_world_position = ray.at_distance(distance);
 
-                for (entity, _, sprite_render, transform) in (&entities, &droids, &sprites, &transforms).join() {
+                for (entity, _, sprite_render, parent) in (&entities, &droids, &sprites, &parents).join() {
                     let sprite_sheet = sprite_sheets.get(&sprite_render.sprite_sheet).unwrap();
                     let sprite = &sprite_sheet.sprites[sprite_render.sprite_number];
                     // TODO: need transform.translation in world coord system
+                    let transform = transforms.get(parent.entity).unwrap();
                     let (min_x, max_x, min_y, max_y) = {
                         // Sprites are centered on a coordinate, so we build out a bbox for the sprite coordinate
                         // and dimensions

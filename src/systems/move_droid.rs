@@ -4,6 +4,7 @@ use amethyst::input::{InputHandler, StringBindings};
 use amethyst::core::components::Parent;
 
 use crate::components::Wall;
+use crate::components::Selected;
 use crate::components::wall::Side;
 use crate::components::droid::{Droid};
 
@@ -25,13 +26,17 @@ impl<'s> System<'s> for MoveDroidSystem {
         WriteStorage<'s, Parent>,
         ReadStorage<'s, Wall>,
         ReadStorage<'s, Transform>,
+        ReadStorage<'s, Selected>,
         Read<'s, InputHandler<StringBindings>>,
     );
 
-    fn run(&mut self, (entities, droids, mut parents, walls, transforms, input): Self::SystemData) {
+    fn run(&mut self, (entities, droids, mut parents, walls, transforms, selections, input): Self::SystemData) {
         let mut moves = Vec::new();
 
-        for (entity, _, parent_tile) in (&entities, &droids, &parents).join() {
+        for (parent_droid, _) in (&parents, &selections).join() {
+            let droid_entity = parent_droid.entity;
+            let parent_tile = parents.get(droid_entity).unwrap();
+
             let hori = input.axis_value("move_horizontal");
             let vert = input.axis_value("move_vertical");
 
@@ -66,7 +71,7 @@ impl<'s> System<'s> for MoveDroidSystem {
                             .last();
 
                         if let Some(tile) = next_tile {
-                            moves.push((entity, tile));
+                            moves.push((droid_entity, tile));
                         }
                     },
                     Direction::Left => {
@@ -90,7 +95,7 @@ impl<'s> System<'s> for MoveDroidSystem {
                             .last();
 
                         if let Some(tile) = next_tile {
-                            moves.push((entity, tile));
+                            moves.push((droid_entity, tile));
                         }
                     },
                     Direction::Up => {
@@ -113,7 +118,7 @@ impl<'s> System<'s> for MoveDroidSystem {
                             .last();
 
                         if let Some(tile) = next_tile {
-                            moves.push((entity, tile));
+                            moves.push((droid_entity, tile));
                         }
                     },
                     Direction::Down => {
@@ -137,7 +142,7 @@ impl<'s> System<'s> for MoveDroidSystem {
                             .last();
 
                         if let Some(tile) = next_tile {
-                            moves.push((entity, tile));
+                            moves.push((droid_entity, tile));
                         }
                     }
                 };
