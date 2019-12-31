@@ -3,6 +3,7 @@ use amethyst::{
     prelude::*,
     assets::{AssetStorage, Loader},
     renderer::{
+        camera::Projection,
         SpriteSheet, SpriteSheetFormat, SpriteRender,
         Texture, ImageFormat, Camera,
     },
@@ -14,15 +15,30 @@ use crate::utils;
 use crate::components;
 
 
-fn initialise_camera(world: &mut World, dimensions: &ScreenDimensions) {
+fn initialise_camera(world: &mut World) {
+    let (width, height) = {
+        let dim = world.read_resource::<ScreenDimensions>();
+        (dim.width(), dim.height())
+    };
+
     // Center the camera in the middle of the screen, and let it cover
     // the entire screen
     let mut transform = Transform::default();
-    transform.set_translation_xyz(dimensions.width() * 0.5, dimensions.height() * 0.5, 1.);
+    transform.set_translation_xyz(width * 0.5, height * 0.5, 1.0);
 
     world
         .create_entity()
-        .with(Camera::standard_2d(dimensions.width(), dimensions.height()))
+        // Define the view that the camera can see. It makes sense to keep the `near` value as
+        // 0.0, as this means it starts seeing anything that is 0 units in front of it. The
+        // `far` value is the distance the camera can see facing the origin.
+        .with(Camera::from(Projection::orthographic(
+            -width / 2.0,
+            width / 2.0,
+            -height / 2.0,
+            height / 2.0,
+            0.0,
+            100.0,
+        )))
         .with(transform)
         .build();
 }
@@ -80,11 +96,11 @@ impl SimpleState for Gameplay {
         let dimensions = (*world.read_resource::<ScreenDimensions>()).clone();
         let sprites = load_sprites(world);
 
-        initialise_camera(world, &dimensions);
+        initialise_camera(world);
         world.register::<components::Tile>();
         world.register::<components::Wall>();
         world.register::<components::Droid>();
-        utils::board::initialise(world, &sprites, &dimensions);
+        utils::board::initialise(world, &sprites);
     }
 
 }
