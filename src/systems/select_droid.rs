@@ -5,6 +5,8 @@ use amethyst::renderer::{
     camera::{Camera, ActiveCamera},
     sprite::{SpriteRender, SpriteSheet},
     Transparent,
+    resources::Tint,
+    palette::Srgba,
 };
 use amethyst::core::{
     components::{Transform, Parent},
@@ -25,18 +27,36 @@ impl<'s> System<'s> for SelectDroidSystem {
         Entities<'s>,
         ReadStorage<'s, Camera>,
         ReadExpect<'s, ScreenDimensions>,
-        WriteStorage<'s, Selected>,
         ReadStorage<'s, Droid>,
+        Read<'s, AssetStorage<SpriteSheet>>,
+        Read<'s, ActiveCamera>,
+        Read<'s, InputHandler<StringBindings>>,
+        WriteStorage<'s, Selected>,
         WriteStorage<'s, SpriteRender>,
         WriteStorage<'s, Transform>,
         WriteStorage<'s, Parent>,
         WriteStorage<'s, Transparent>,
-        Read<'s, AssetStorage<SpriteSheet>>,
-        Read<'s, ActiveCamera>,
-        Read<'s, InputHandler<StringBindings>>,
+        WriteStorage<'s, Tint>,
     );
 
-    fn run(&mut self, (entities, cameras, dim, mut selections, droids, mut sprites, mut transforms, mut parents, mut transparents, sprite_sheets, active_camera, input): Self::SystemData) {
+    fn run(
+        &mut self,
+        (
+            entities,
+            cameras,
+            dim,
+            droids,
+            sprite_sheets,
+            active_camera,
+            input,
+            mut selections,
+            mut sprites,
+            mut transforms,
+            mut parents,
+            mut transparents,
+            mut tints,
+        ): Self::SystemData
+    ) {
         if let Some((mouse_x, mouse_y)) = input.mouse_position() {
             let down = input.mouse_button_is_down(MouseButton::Left);
 
@@ -65,9 +85,9 @@ impl<'s> System<'s> for SelectDroidSystem {
                 let distance = ray.intersect_plane(&Plane::with_z(0.0)).unwrap();
                 let mouse_world_position = ray.at_distance(distance);
 
-                for (entity, _, sprite, transform) in (&entities, &droids, &sprites, &transforms).join() {
-                    let sprite_sheet = sprite_sheets.get(&sprite.sprite_sheet).unwrap();
-                    let sprite = &sprite_sheet.sprites[sprite.sprite_number];
+                for (entity, _, sprite_render, transform) in (&entities, &droids, &sprites, &transforms).join() {
+                    let sprite_sheet = sprite_sheets.get(&sprite_render.sprite_sheet).unwrap();
+                    let sprite = &sprite_sheet.sprites[sprite_render.sprite_number];
                     // TODO: need transform.translation in world coord system
                     let (min_x, max_x, min_y, max_y) = {
                         // Sprites are centered on a coordinate, so we build out a bbox for the sprite coordinate
@@ -85,17 +105,19 @@ impl<'s> System<'s> for SelectDroidSystem {
                         && mouse_world_position.y > min_y
                         && mouse_world_position.y < max_y
                     {
-                        // let selection_sprite = SpriteRender{
-                        //     sprite_sheet: sprite_sheet.clone(),
-                        //     sprite_number: 4,
-                        // };
+                        let selection_sprite = SpriteRender{
+                            sprite_sheet: sprite_render.sprite_sheet.clone(),
+                            sprite_number: 4,
+                        };
                         let mut selection_transform = Transform::default();
                         selection_transform.prepend_translation_z(1.0);
+                        let selection_tint = Tint(Srgba::new(0.0, 0.0, 1.0, 1.0));
                         let s = entities.build_entity()
                             .with(Selected{}, &mut selections)
                             .with(selection_transform, &mut transforms)
                             .with(Parent{entity: entity}, &mut parents)
-                            // .with(selection_sprite.clone(), &mut sprites)
+                            .with(selection_sprite.clone(), &mut sprites)
+                            .with(selection_tint, &mut tints)
                             .with(Transparent, &mut transparents)
                             .build();
 

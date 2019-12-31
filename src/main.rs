@@ -36,8 +36,6 @@ fn main() -> amethyst::Result<()> {
                         .with_clear([0.34, 0.36, 0.52, 1.0]),
                 )
                 .with_plugin(RenderFlat2D::default()),
-                // .with_sprite_sheet_processor()
-                // .with_sprite_visibility_sorting(&[]),
         )?
         .with_bundle(
             InputBundle::<StringBindings>::new()
