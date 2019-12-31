@@ -93,7 +93,6 @@ impl SimpleState for Gameplay {
         // Get the screen dimensions so we can initialize the camera and
         // place our sprites correctly later. We'll clone this since we'll
         // pass the world mutably to the following functions.
-        let dimensions = (*world.read_resource::<ScreenDimensions>()).clone();
         let sprites = load_sprites(world);
 
         initialise_camera(world);

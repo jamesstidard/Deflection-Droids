@@ -4,9 +4,10 @@ use amethyst::input::{InputHandler, StringBindings};
 use amethyst::renderer::{
     camera::{Camera, ActiveCamera},
     sprite::{SpriteRender, SpriteSheet},
+    Transparent,
 };
 use amethyst::core::{
-    components::Transform,
+    components::{Transform, Parent},
     geometry::Plane,
     math::{Point2, Vector2},
 };
@@ -27,18 +28,25 @@ impl<'s> System<'s> for SelectDroidSystem {
         WriteStorage<'s, Selected>,
         ReadStorage<'s, Droid>,
         ReadStorage<'s, SpriteRender>,
-        ReadStorage<'s, Transform>,
+        WriteStorage<'s, Transform>,
+        WriteStorage<'s, Parent>,
         Read<'s, AssetStorage<SpriteSheet>>,
         Read<'s, ActiveCamera>,
         Read<'s, InputHandler<StringBindings>>,
     );
 
-    fn run(&mut self, (entities, cameras, dim, selections, droids, sprites, transforms, sprite_sheets, active_camera, input): Self::SystemData) {
+    fn run(&mut self, (entities, cameras, dim, mut selections, droids, sprites, mut transforms, mut parents, sprite_sheets, active_camera, input): Self::SystemData) {
         if let Some((mouse_x, mouse_y)) = input.mouse_position() {
             let down = input.mouse_button_is_down(MouseButton::Left);
 
             if !down {
                 return
+            }
+
+            // deselect previous
+            for (e, _) in (&*entities, &selections).join() {
+                println!("deleted: {:?}", e);
+                entities.delete(e);
             }
 
             let mut camera_join = (&cameras, &transforms).join();
@@ -56,7 +64,7 @@ impl<'s> System<'s> for SelectDroidSystem {
                 let distance = ray.intersect_plane(&Plane::with_z(0.0)).unwrap();
                 let mouse_world_position = ray.at_distance(distance);
 
-                for (droid, sprite, transform) in (&droids, &sprites, &transforms).join() {
+                for (entity, _, sprite, transform) in (&entities, &droids, &sprites, &transforms).join() {
                     let sprite_sheet = sprite_sheets.get(&sprite.sprite_sheet).unwrap();
                     let sprite = &sprite_sheet.sprites[sprite.sprite_number];
                     let (min_x, max_x, min_y, max_y) = {
@@ -75,7 +83,21 @@ impl<'s> System<'s> for SelectDroidSystem {
                         && mouse_world_position.y > min_y
                         && mouse_world_position.y < max_y
                     {
-                        println!("{:?}", droid);
+                        let selection_sprite = &sprite_sheet.sprites[4];
+                        let mut selection_transform = Transform::default();
+                        selection_transform.prepend_translation_z(1.0);
+                        let s = entities.build_entity()
+                            .with(Selected{}, &mut selections)
+                            .with(selection_transform, &mut transforms)
+                            .with(Parent{entity: entity}, &mut parents)
+                            // .with(selection_sprite.clone())
+                            // .with(Transparent)
+                            .build();
+
+                        println!("built: {:?}", s);
+
+                        // exit after 1st select
+                        return
                     }
                 }
             }
