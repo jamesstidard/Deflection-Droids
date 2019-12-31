@@ -15,6 +15,7 @@ use crate::components::tile::{TILE_HEIGHT, TILE_WIDTH};
 use crate::components::Wall;
 use crate::components::wall::Side;
 use crate::components::Droid;
+use crate::components::Selected;
 
 pub const X_TILES_COUNT: i32 = 16;
 pub const Y_TILES_COUNT: i32 = 16;
@@ -79,8 +80,9 @@ const DROIDS: [[i32; 2]; 1] = [
 
 pub fn initialise(world: &mut World, sprites: &[SpriteRender]) {
     let tile_sprite = &sprites[0];
-    let wall_sprite = &sprites[3];
     let droid_sprite = &sprites[1];
+    let wall_sprite = &sprites[3];
+    let selection_sprite = &sprites[4];
 
     for x_tile in 0..X_TILES_COUNT {
         for y_tile in 0..Y_TILES_COUNT {
@@ -181,15 +183,28 @@ pub fn initialise(world: &mut World, sprites: &[SpriteRender]) {
             if DROIDS.iter().find(|&&w| w == [x_tile, y_tile]).is_some() {
                 let mut droid_transform = Transform::default();
                 droid_transform.prepend_translation_z(1.0);
-                let tint = Tint(Srgba::new(1.0, 0.0, 0.0, 1.0));
-                world
+                let droid_tint = Tint(Srgba::new(1.0, 0.0, 0.0, 1.0));
+                let droid = world
                     .create_entity()
                     .with(Droid{})
                     .with(droid_transform)
                     .with(Parent{entity: tile})
                     .with(droid_sprite.clone())
                     .with(Transparent)
-                    .with(tint)
+                    .with(droid_tint)
+                    .build();
+
+                let mut selection_transform = Transform::default();
+                selection_transform.prepend_translation_z(1.0);
+                let selection_tint = Tint(Srgba::new(0.0, 0.0, 1.0, 1.0));
+                world
+                    .create_entity()
+                    .with(Selected{})
+                    .with(selection_transform)
+                    .with(Parent{entity: droid})
+                    .with(selection_sprite.clone())
+                    .with(Transparent)
+                    .with(selection_tint)
                     .build();
             }
         }
