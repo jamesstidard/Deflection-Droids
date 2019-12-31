@@ -1,7 +1,12 @@
 use amethyst::{
     ecs::prelude::*,
     core::transform::{Transform, Parent},
-    renderer::{SpriteRender, Transparent},
+    renderer::{
+        SpriteRender,
+        Transparent,
+        resources::Tint,
+        palette::Srgba,
+    },
     window::ScreenDimensions,
 };
 
@@ -73,9 +78,9 @@ const DROIDS: [[i32; 2]; 1] = [
 ];
 
 pub fn initialise(world: &mut World, sprites: &[SpriteRender]) {
-    let tile_render = &sprites[0];
-    let wall_render = &sprites[3];
-    let droid_render = &sprites[1];
+    let tile_sprite = &sprites[0];
+    let wall_sprite = &sprites[3];
+    let droid_sprite = &sprites[1];
 
     for x_tile in 0..X_TILES_COUNT {
         for y_tile in 0..Y_TILES_COUNT {
@@ -88,7 +93,7 @@ pub fn initialise(world: &mut World, sprites: &[SpriteRender]) {
             let tile = world
                 .create_entity()
                 .with(Tile{})
-                .with(tile_render.clone())
+                .with(tile_sprite.clone())
                 .with(local_transform.clone())
                 .build();
 
@@ -107,7 +112,7 @@ pub fn initialise(world: &mut World, sprites: &[SpriteRender]) {
                     .with(Wall{side: Side::Left})
                     .with(wall_transform)
                     .with(Parent{entity: tile})
-                    .with(wall_render.clone())
+                    .with(wall_sprite.clone())
                     .with(Transparent)
                     .build();
             }
@@ -127,7 +132,7 @@ pub fn initialise(world: &mut World, sprites: &[SpriteRender]) {
                     .with(Wall{side: Side::Top})
                     .with(wall_transform)
                     .with(Parent{entity: tile})
-                    .with(wall_render.clone())
+                    .with(wall_sprite.clone())
                     .with(Transparent)
                     .build();
             }
@@ -147,7 +152,7 @@ pub fn initialise(world: &mut World, sprites: &[SpriteRender]) {
                     .with(Wall{side: Side::Right})
                     .with(wall_transform)
                     .with(Parent{entity: tile})
-                    .with(wall_render.clone())
+                    .with(wall_sprite.clone())
                     .with(Transparent)
                     .build();
             }
@@ -167,7 +172,7 @@ pub fn initialise(world: &mut World, sprites: &[SpriteRender]) {
                     .with(Wall{side: Side::Bottom})
                     .with(wall_transform)
                     .with(Parent{entity: tile})
-                    .with(wall_render.clone())
+                    .with(wall_sprite.clone())
                     .with(Transparent)
                     .build();
             }
@@ -176,13 +181,15 @@ pub fn initialise(world: &mut World, sprites: &[SpriteRender]) {
             if DROIDS.iter().find(|&&w| w == [x_tile, y_tile]).is_some() {
                 let mut droid_transform = Transform::default();
                 droid_transform.prepend_translation_z(1.0);
+                let tint = Tint(Srgba::new(1.0, 0.0, 0.0, 1.0));
                 world
                     .create_entity()
                     .with(Droid{})
                     .with(droid_transform)
                     .with(Parent{entity: tile})
-                    .with(droid_render.clone())
+                    .with(droid_sprite.clone())
                     .with(Transparent)
+                    .with(tint)
                     .build();
             }
         }
