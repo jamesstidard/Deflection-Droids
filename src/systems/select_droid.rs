@@ -27,15 +27,16 @@ impl<'s> System<'s> for SelectDroidSystem {
         ReadExpect<'s, ScreenDimensions>,
         WriteStorage<'s, Selected>,
         ReadStorage<'s, Droid>,
-        ReadStorage<'s, SpriteRender>,
+        WriteStorage<'s, SpriteRender>,
         WriteStorage<'s, Transform>,
         WriteStorage<'s, Parent>,
+        WriteStorage<'s, Transparent>,
         Read<'s, AssetStorage<SpriteSheet>>,
         Read<'s, ActiveCamera>,
         Read<'s, InputHandler<StringBindings>>,
     );
 
-    fn run(&mut self, (entities, cameras, dim, mut selections, droids, sprites, mut transforms, mut parents, sprite_sheets, active_camera, input): Self::SystemData) {
+    fn run(&mut self, (entities, cameras, dim, mut selections, droids, mut sprites, mut transforms, mut parents, mut transparents, sprite_sheets, active_camera, input): Self::SystemData) {
         if let Some((mouse_x, mouse_y)) = input.mouse_position() {
             let down = input.mouse_button_is_down(MouseButton::Left);
 
@@ -84,15 +85,18 @@ impl<'s> System<'s> for SelectDroidSystem {
                         && mouse_world_position.y > min_y
                         && mouse_world_position.y < max_y
                     {
-                        let selection_sprite = &sprite_sheet.sprites[4];
+                        // let selection_sprite = SpriteRender{
+                        //     sprite_sheet: sprite_sheet.clone(),
+                        //     sprite_number: 4,
+                        // };
                         let mut selection_transform = Transform::default();
                         selection_transform.prepend_translation_z(1.0);
                         let s = entities.build_entity()
                             .with(Selected{}, &mut selections)
                             .with(selection_transform, &mut transforms)
                             .with(Parent{entity: entity}, &mut parents)
-                            // .with(selection_sprite.clone())
-                            // .with(Transparent)
+                            // .with(selection_sprite.clone(), &mut sprites)
+                            .with(Transparent, &mut transparents)
                             .build();
 
                         println!("built: {:?}", s);

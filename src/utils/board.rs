@@ -194,6 +194,8 @@ pub fn initialise(world: &mut World, sprites: &[SpriteRender]) {
                     .with(droid_tint)
                     .build();
 
+                // TODO: remove when mouse selection works. selects all
+                // droid at start up currently.
                 let mut selection_transform = Transform::default();
                 selection_transform.prepend_translation_z(1.0);
                 let selection_tint = Tint(Srgba::new(0.0, 0.0, 1.0, 1.0));
