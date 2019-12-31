@@ -11,6 +11,7 @@ use amethyst::core::{
     math::{Point2, Vector2},
 };
 use amethyst::window::ScreenDimensions;
+use amethyst::winit::{MouseButton};
 
 use crate::components::Droid;
 use crate::components::Selected;
@@ -33,7 +34,13 @@ impl<'s> System<'s> for SelectDroidSystem {
     );
 
     fn run(&mut self, (entities, cameras, dim, selections, droids, sprites, transforms, sprite_sheets, active_camera, input): Self::SystemData) {
-        if let Some(mouse_position) = input.mouse_position() {
+        if let Some((mouse_x, mouse_y)) = input.mouse_position() {
+            let down = input.mouse_button_is_down(MouseButton::Left);
+
+            if !down {
+                return
+            }
+
             let mut camera_join = (&cameras, &transforms).join();
 
             if let Some((camera, camera_transform)) = active_camera
@@ -42,7 +49,7 @@ impl<'s> System<'s> for SelectDroidSystem {
                 .or_else(|| camera_join.next())
             {
                 let ray = camera.projection().screen_ray(
-                    Point2::new(mouse_position.0, mouse_position.1),
+                    Point2::new(mouse_x, mouse_y),
                     Vector2::new(dim.width(), dim.height()),
                     camera_transform,
                 );
