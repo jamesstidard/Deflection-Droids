@@ -1,8 +1,11 @@
+use std::collections::HashSet;
+
 use amethyst::core::Transform;
 use amethyst::ecs::{Join, Read, ReadStorage, System, WriteStorage, Entities};
 use amethyst::input::{InputHandler, StringBindings};
 use amethyst::core::components::Parent;
 
+use crate::components::Tile;
 use crate::components::Wall;
 use crate::components::Selected;
 use crate::components::wall::Side;
@@ -25,12 +28,26 @@ impl<'s> System<'s> for MoveDroidSystem {
         ReadStorage<'s, Droid>,
         WriteStorage<'s, Parent>,
         ReadStorage<'s, Wall>,
+        ReadStorage<'s, Tile>,
         ReadStorage<'s, Transform>,
         ReadStorage<'s, Selected>,
         Read<'s, InputHandler<StringBindings>>,
     );
 
-    fn run(&mut self, (entities, droids, mut parents, walls, transforms, selections, input): Self::SystemData) {
+    fn run(
+        &mut self,
+        (
+            entities,
+            droids,
+            mut parents,
+            walls,
+            tiles,
+            transforms,
+            selections,
+            input
+        ): Self::SystemData
+    )
+    {
         let mut moves = Vec::new();
 
         for (parent_droid, _) in (&parents, &selections).join() {
@@ -48,109 +65,99 @@ impl<'s> System<'s> for MoveDroidSystem {
                 _ => continue,
             };
 
-            if let Some(tile_transform) = transforms.get(parent_tile.entity) {
+            let stopping_wall = match direction {
+                Direction::Right => Side::Right,
+                Direction::Left => Side::Left,
+                Direction::Up => Side::Top,
+                Direction::Down => Side::Bottom,
+            };
 
-                match direction {
-                    Direction::Right => {
-                        let mut line_tiles = (&walls, &parents)
-                            .join()
-                            .filter(|(wall, _)| wall.side == Side::Right)
-                            .map(|(wall, parent)| (wall, parent, transforms.get(parent.entity)))
-                            .filter(|(_, _, transform)| transform.is_some())
-                            .map(|(wall, parent, transform)| (wall, parent, transform.unwrap()))
-                            .filter(|(_, _, transform)| transform.translation().y == tile_transform.translation().y)
-                            .filter(|(_, _, transform)| transform.translation().x >= tile_transform.translation().x)
-                            .collect::<Vec<_>>();
+            let tile_transform = transforms.get(parent_tile.entity).unwrap();
+            let current_x = tile_transform.translation().x;
+            let current_y = tile_transform.translation().y;
 
-                        line_tiles.sort_by(|(_, _, t1), (_, _, t2)| t1.translation().x.partial_cmp(&t2.translation().x).unwrap());
+            let wall_tile_entities = (&walls, &parents).join()
+                .filter(|(wall, _)| wall.side == stopping_wall)
+                .map(|(wall, parent)| (wall, parent, transforms.get(parent.entity)))
+                .map(|(wall, parent, tf)| (wall, parent, tf.unwrap().translation()))
+                .map(|(_, parent, _)| parent.entity)
+                .collect::<HashSet<_>>();
 
-                        let next_tile = line_tiles
-                            .iter()
-                            .take(1)
-                            .map(|(_, parent, _)| parent.entity)
-                            .last();
+            let mut droid_tile_entities = (&droids, &parents).join()
+                .map(|(droid, parent)| (droid, parent, transforms.get(parent.entity)))
+                .map(|(droid, parent, tf)| (droid, parent, tf.unwrap().translation()))
+                .map(|(_, parent, _)| parent.entity)
+                .collect::<HashSet<_>>();
+            droid_tile_entities.remove(&parent_tile.entity);  // remove self
 
-                        if let Some(tile) = next_tile {
-                            moves.push((droid_entity, tile));
-                        }
-                    },
-                    Direction::Left => {
-                        let mut line_tiles = (&walls, &parents)
-                            .join()
-                            .filter(|(wall, _)| wall.side == Side::Left)
-                            .map(|(wall, parent)| (wall, parent, transforms.get(parent.entity)))
-                            .filter(|(_, _, transform)| transform.is_some())
-                            .map(|(wall, parent, transform)| (wall, parent, transform.unwrap()))
-                            .filter(|(_, _, transform)| transform.translation().y == tile_transform.translation().y)
-                            .filter(|(_, _, transform)| transform.translation().x <= tile_transform.translation().x)
-                            .collect::<Vec<_>>();
+            let candidate_tiles = match direction {
+                Direction::Right => {
+                    let mut candidate_tiles = (&*entities, &tiles, &transforms).join()
+                        .map(|(ent, tile, tf)| (ent, tile, tf.translation()))
+                        .filter(|(_, _, tl)| tl.x >= current_x)
+                        .filter(|(_, _, tl)| tl.y == current_y)
+                        .collect::<Vec<_>>();
 
-                        line_tiles.sort_by(|(_, _, t1), (_, _, t2)| t1.translation().x.partial_cmp(&t2.translation().x).unwrap());
-                        line_tiles.reverse();
+                    candidate_tiles.sort_by(|(_, _, t1), (_, _, t2)|
+                        t1.x.partial_cmp(&t2.x).unwrap()
+                    );
+                    candidate_tiles
+                },
+                Direction::Left => {
+                    let mut candidate_tiles = (&*entities, &tiles, &transforms).join()
+                        .map(|(ent, tile, tf)| (ent, tile, tf.translation()))
+                        .filter(|(_, _, tl)| tl.x <= current_x)
+                        .filter(|(_, _, tl)| tl.y == current_y)
+                        .collect::<Vec<_>>();
 
-                        let next_tile = line_tiles
-                            .iter()
-                            .take(1)
-                            .map(|(_, parent, _)| parent.entity)
-                            .last();
+                    candidate_tiles.sort_by(|(_, _, t1), (_, _, t2)|
+                        t1.x.partial_cmp(&t2.x).unwrap()
+                    );
+                    candidate_tiles.reverse();
+                    candidate_tiles
+                },
+                Direction::Up => {
+                    let mut candidate_tiles = (&*entities, &tiles, &transforms).join()
+                        .map(|(ent, tile, tf)| (ent, tile, tf.translation()))
+                        .filter(|(_, _, tl)| tl.x == current_x)
+                        .filter(|(_, _, tl)| tl.y >= current_y)
+                        .collect::<Vec<_>>();
 
-                        if let Some(tile) = next_tile {
-                            moves.push((droid_entity, tile));
-                        }
-                    },
-                    Direction::Up => {
-                        let mut line_tiles = (&walls, &parents)
-                            .join()
-                            .filter(|(wall, _)| wall.side == Side::Top)
-                            .map(|(wall, parent)| (wall, parent, transforms.get(parent.entity)))
-                            .filter(|(_, _, transform)| transform.is_some())
-                            .map(|(wall, parent, transform)| (wall, parent, transform.unwrap()))
-                            .filter(|(_, _, transform)| transform.translation().x == tile_transform.translation().x)
-                            .filter(|(_, _, transform)| transform.translation().y >= tile_transform.translation().y)
-                            .collect::<Vec<_>>();
+                    candidate_tiles.sort_by(|(_, _, t1), (_, _, t2)|
+                        t1.y.partial_cmp(&t2.y).unwrap()
+                    );
+                    candidate_tiles
+                },
+                Direction::Down => {
+                    let mut candidate_tiles = (&*entities, &tiles, &transforms).join()
+                        .map(|(ent, tile, tf)| (ent, tile, tf.translation()))
+                        .filter(|(_, _, tl)| tl.x == current_x)
+                        .filter(|(_, _, tl)| tl.y <= current_y)
+                        .collect::<Vec<_>>();
 
-                        line_tiles.sort_by(|(_, _, t1), (_, _, t2)| t1.translation().y.partial_cmp(&t2.translation().y).unwrap());
+                    candidate_tiles.sort_by(|(_, _, t1), (_, _, t2)|
+                        t1.y.partial_cmp(&t2.y).unwrap()
+                    );
+                    candidate_tiles.reverse();
+                    candidate_tiles
+                }
+            };
 
-                        let next_tile = line_tiles
-                            .iter()
-                            .take(1)
-                            .map(|(_, parent, _)| parent.entity)
-                            .last();
+            for (tile_entity, _, _) in candidate_tiles {
+                if droid_tile_entities.contains(&tile_entity) {
+                    break
+                }
 
-                        if let Some(tile) = next_tile {
-                            moves.push((droid_entity, tile));
-                        }
-                    },
-                    Direction::Down => {
-                        let mut line_tiles = (&walls, &parents)
-                            .join()
-                            .filter(|(wall, _)| wall.side == Side::Bottom)
-                            .map(|(wall, parent)| (wall, parent, transforms.get(parent.entity)))
-                            .filter(|(_, _, transform)| transform.is_some())
-                            .map(|(wall, parent, transform)| (wall, parent, transform.unwrap()))
-                            .filter(|(_, _, transform)| transform.translation().x == tile_transform.translation().x)
-                            .filter(|(_, _, transform)| transform.translation().y <= tile_transform.translation().y)
-                            .collect::<Vec<_>>();
+                moves.push((droid_entity, tile_entity));
 
-                        line_tiles.sort_by(|(_, _, t1), (_, _, t2)| t1.translation().y.partial_cmp(&t2.translation().y).unwrap());
-                        line_tiles.reverse();
-
-                        let next_tile = line_tiles
-                            .iter()
-                            .take(1)
-                            .map(|(_, parent, _)| parent.entity)
-                            .last();
-
-                        if let Some(tile) = next_tile {
-                            moves.push((droid_entity, tile));
-                        }
-                    }
-                };
+                if wall_tile_entities.contains(&tile_entity) {
+                    break
+                }
             }
         }
 
-        for (entity, tile) in moves {
-            parents.insert(entity, Parent{entity: tile});
+        for (droid, tile) in moves {
+            parents.insert(droid, Parent{entity: tile});
         }
     }
 }

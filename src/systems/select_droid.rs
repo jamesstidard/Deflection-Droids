@@ -66,7 +66,6 @@ impl<'s> System<'s> for SelectDroidSystem {
 
             // deselect previous
             for (e, _) in (&*entities, &selections).join() {
-                println!("deleted: {:?}", e);
                 entities.delete(e);
             }
 
@@ -121,8 +120,6 @@ impl<'s> System<'s> for SelectDroidSystem {
                             .with(selection_tint, &mut tints)
                             .with(Transparent, &mut transparents)
                             .build();
-
-                        println!("built: {:?}", s);
 
                         // exit after 1st select
                         return

@@ -1,8 +1,8 @@
 (
   title: "Deflection Droids",
-  dimensions: Some((512, 512)),
-  max_dimensions: Some((512, 512)),
-  min_dimensions: Some((512, 512)),
+  dimensions: Some((1024, 1024)),
+  max_dimensions: Some((1024, 1024)),
+  min_dimensions: Some((1024, 1024)),
   multisampling: 1,
   visibility: true,
   vsync: true,

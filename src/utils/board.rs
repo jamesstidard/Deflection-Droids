@@ -72,8 +72,9 @@ const WALLS: [[f32; 2]; 50] = [
     [2.0, 15.5],
     [12.0, 15.5],
 ];
-const DROIDS: [[i32; 2]; 1] = [
-    [0, 0],
+const DROIDS: [[i32; 2]; 2] = [
+    [0, 15],
+    [2, 15]
 ];
 
 pub fn initialise(world: &mut World, sprites: &[SpriteRender]) {
@@ -181,7 +182,7 @@ pub fn initialise(world: &mut World, sprites: &[SpriteRender]) {
                 let mut droid_transform = Transform::default();
                 droid_transform.prepend_translation_z(1.0);
                 let droid_tint = Tint(Srgba::new(1.0, 0.0, 0.0, 1.0));
-                let droid = world
+                world
                     .create_entity()
                     .with(Droid{})
                     .with(droid_transform)
