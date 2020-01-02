@@ -83,12 +83,12 @@ impl<'s> System<'s> for MoveDroidSystem {
                 .map(|(_, parent, _)| parent.entity)
                 .collect::<HashSet<_>>();
 
-            let mut droid_tile_entities = (&droids, &parents).join()
+            let droid_tile_entities = (&droids, &parents).join()
+                .filter(|(_, parent)| parent.entity != parent_tile.entity)
                 .map(|(droid, parent)| (droid, parent, transforms.get(parent.entity)))
                 .map(|(droid, parent, tf)| (droid, parent, tf.unwrap().translation()))
                 .map(|(_, parent, _)| parent.entity)
                 .collect::<HashSet<_>>();
-            droid_tile_entities.remove(&parent_tile.entity);  // remove self
 
             let candidate_tiles = match direction {
                 Direction::Right => {
