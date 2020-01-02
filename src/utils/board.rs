@@ -14,6 +14,7 @@ use crate::components::tile::{TILE_HEIGHT, TILE_WIDTH};
 use crate::components::Wall;
 use crate::components::wall::Side;
 use crate::components::Droid;
+use crate::components::Token;
 
 pub const X_TILES_COUNT: i32 = 16;
 pub const Y_TILES_COUNT: i32 = 16;
@@ -74,12 +75,16 @@ const WALLS: [[f32; 2]; 50] = [
 ];
 const DROIDS: [[i32; 2]; 2] = [
     [0, 15],
-    [2, 15]
+    [2, 15],
+];
+const TOKENS: [[i32; 2]; 1] = [
+    [1, 11],
 ];
 
 pub fn initialise(world: &mut World, sprites: &[SpriteRender]) {
     let tile_sprite = &sprites[0];
     let droid_sprite = &sprites[1];
+    let token_sprite = &sprites[2];
     let wall_sprite = &sprites[3];
 
     for x_tile in 0..X_TILES_COUNT {
@@ -190,6 +195,21 @@ pub fn initialise(world: &mut World, sprites: &[SpriteRender]) {
                     .with(droid_sprite.clone())
                     .with(Transparent)
                     .with(droid_tint)
+                    .build();
+            }
+
+            if TOKENS.iter().find(|&&w| w == [x_tile, y_tile]).is_some() {
+                let mut token_transform = Transform::default();
+                token_transform.prepend_translation_z(1.0);
+                let token_tint = Tint(Srgba::new(0.2, 0.2, 0.2, 1.0));
+                world
+                    .create_entity()
+                    .with(Token{})
+                    .with(token_transform)
+                    .with(Parent{entity: tile})
+                    .with(token_sprite.clone())
+                    .with(Transparent)
+                    .with(token_tint)
                     .build();
             }
         }
