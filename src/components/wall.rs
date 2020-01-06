@@ -3,7 +3,7 @@ use amethyst::{
 };
 
 
-#[derive(PartialEq, Eq, Debug)]
+#[derive(PartialEq, Eq, Debug, Hash)]
 pub enum Side {
     Left,
     Right,

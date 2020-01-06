@@ -1,6 +1,6 @@
 use amethyst::{
     ecs::prelude::*,
-    core::transform::{Transform, Parent},
+    core::{transform::{Transform, Parent}, Hidden},
     renderer::{
         SpriteRender,
         Transparent,
@@ -210,6 +210,7 @@ pub fn initialise(world: &mut World, sprites: &[SpriteRender]) {
                     .with(token_sprite.clone())
                     .with(Transparent)
                     .with(token_tint)
+                    .with(Hidden)
                     .build();
             }
         }

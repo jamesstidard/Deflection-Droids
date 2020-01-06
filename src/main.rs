@@ -43,6 +43,7 @@ fn main() -> amethyst::Result<()> {
         )?
         .with(systems::MoveDroidSystem, "move_droid", &[])
         .with(systems::SelectDroidSystem, "select_droid", &[])
+        .with(systems::HighlightTileSystem, "highlight_tile", &[])
     ;
 
     let mut game = Application::new(resources, Gameplay, game_data)?;

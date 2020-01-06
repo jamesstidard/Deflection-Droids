@@ -78,16 +78,12 @@ impl<'s> System<'s> for MoveDroidSystem {
 
             let wall_tile_entities = (&walls, &parents).join()
                 .filter(|(wall, _)| wall.side == stopping_wall)
-                .map(|(wall, parent)| (wall, parent, transforms.get(parent.entity)))
-                .map(|(wall, parent, tf)| (wall, parent, tf.unwrap().translation()))
-                .map(|(_, parent, _)| parent.entity)
+                .map(|(_, parent)| parent.entity)
                 .collect::<HashSet<_>>();
 
             let droid_tile_entities = (&droids, &parents).join()
                 .filter(|(_, parent)| parent.entity != parent_tile.entity)
-                .map(|(droid, parent)| (droid, parent, transforms.get(parent.entity)))
-                .map(|(droid, parent, tf)| (droid, parent, tf.unwrap().translation()))
-                .map(|(_, parent, _)| parent.entity)
+                .map(|(_, parent)| parent.entity)
                 .collect::<HashSet<_>>();
 
             let candidate_tiles = match direction {
